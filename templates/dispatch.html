@@ -2,44 +2,114 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dispatch Station</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Dispatch Terminal — Smart Warehouse</title>
     <link rel="stylesheet" href="/static/style.css">
-    <style>
-        .dispatch-wrapper { max-width: 700px; margin: 0 auto; padding: 20px; }
-        .card { background: #1e293b; padding: 20px; border-radius: 8px; border: 1px solid #334155; margin-bottom: 20px; }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 5px; color: #94a3b8; }
-        .form-control { width: 100%; padding: 10px; background: #0f172a; border: 1px solid #334155; color: #fff; border-radius: 6px; box-sizing: border-box; }
-        .btn { width: 100%; padding: 12px; background: #2563eb; color: #fff; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
-        .instruction-card { background: #1e293b; border-left: 5px solid #3b82f6; padding: 15px; margin-bottom: 15px; border-radius: 6px; }
-        .instruction-card.partial { border-left-color: #f59e0b; }
-        .badge-loc { font-size: 1.2rem; font-weight: bold; color: #38bdf8; }
-    </style>
 </head>
-<body>
+<body class="terminal-body">
+
     <div class="dispatch-wrapper">
-        <header>
-            <h1>Dispatch Station</h1>
-            <p style="color: #94a3b8;">FIFO Stock Picking</p>
+
+        <header class="terminal-header">
+            <a href="/" class="back-link">&larr; Terminal Select</a>
+            <div class="terminal-tag"><span class="status-dot"></span> STATION 02 — DISPATCH</div>
         </header>
 
-        <div class="card">
-            <div class="form-group">
-                <label for="core-type-select">Select Core Type:</label>
-                <select id="core-type-select" class="form-control">
-                    <option value="">Loading...</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="quantity-input">Quantity Needed:</label>
-                <input type="number" id="quantity-input" class="form-control" min="1" placeholder="e.g. 5">
-            </div>
-            <button class="btn" onclick="submitDispatchOrder()">Calculate Pick List</button>
-        </div>
+        <div class="dispatch-layout">
 
-        <div id="pick-instructions-list"></div>
+            <!-- LEFT: search + type grid -->
+            <aside class="type-panel">
+                <div class="search-bar">
+                    <svg class="search-icon" viewBox="0 0 24 24" fill="none">
+                        <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    <input id="type-search" type="text" placeholder="Search core type…" autocomplete="off">
+                </div>
+                <div id="type-grid" class="type-grid"></div>
+            </aside>
+
+            <!-- RIGHT: dynamic output -->
+            <section class="output-panel">
+
+                <div id="panel-empty" class="panel-state is-active">
+                    <div class="empty-hint">
+                        <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="26" cy="26" r="16" stroke="currentColor" stroke-width="3"/>
+                            <line x1="38" y1="38" x2="52" y2="52" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+                        </svg>
+                        <p>Pick a core type on the left to start a dispatch.</p>
+                    </div>
+                </div>
+
+                <div id="panel-quantity" class="panel-state">
+                    <div class="selected-type-header">
+                        <div class="type-thumb type-thumb-lg" id="sel-type-thumb"></div>
+                        <div>
+                            <h2 id="sel-type-name" class="panel-title"></h2>
+                            <p id="sel-type-stock" class="panel-sub"></p>
+                        </div>
+                    </div>
+                    <label class="field-label" for="qty-input">How many pieces do you need?</label>
+                    <div class="qty-row">
+                        <button id="qty-minus" class="qty-btn">−</button>
+                        <input id="qty-input" type="number" value="1" min="1">
+                        <button id="qty-plus" class="qty-btn">+</button>
+                    </div>
+                    <button id="btn-check" class="btn-primary btn-lg">Check availability</button>
+                </div>
+
+                <div id="panel-error" class="panel-state">
+                    <div id="error-icon" class="status-icon">!</div>
+                    <h2 id="error-title" class="panel-title"></h2>
+                    <p id="error-desc" class="panel-sub"></p>
+                    <div id="error-countdown" class="error-countdown" style="display:none;">
+                        <span id="error-countdown-num"></span>
+                    </div>
+                    <div class="stage-actions">
+                        <button id="btn-error-back" class="btn-ghost">Back</button>
+                        <button id="btn-error-recheck" class="btn-primary" style="display:none;">Check again</button>
+                    </div>
+                </div>
+
+                <div id="panel-step" class="panel-state">
+                    <div class="step-meta">
+                        <span id="step-progress" class="step-progress"></span>
+                        <span id="step-row-label" class="step-row-label"></span>
+                    </div>
+
+                    <div id="row-strip" class="row-strip"></div>
+
+                    <h2 id="step-title" class="panel-title"></h2>
+                    <p id="step-desc" class="panel-sub"></p>
+
+                    <div id="step-actions-remove" class="step-actions">
+                        <button id="btn-box-removed" class="btn-primary btn-lg">Box removed — continue</button>
+                    </div>
+
+                    <div id="step-counting" class="counting-station">
+                        <div class="counter-display">
+                            <span id="counter-num">--</span>
+                            <span class="counter-label">pcs left in box</span>
+                        </div>
+                        <p id="counting-hint" class="counting-hint"></p>
+                        <button id="btn-sim-remove" class="btn-outline">Simulate: remove 1 piece (dev)</button>
+                        <button id="btn-box-returned" class="btn-primary btn-lg" disabled>Box returned — continue</button>
+                    </div>
+                </div>
+
+                <div id="panel-done" class="panel-state">
+                    <div class="status-icon status-icon-ready">✓</div>
+                    <h2 class="panel-title">Pick complete</h2>
+                    <p id="done-summary" class="panel-sub"></p>
+                    <button id="btn-dispatch-new" class="btn-primary btn-lg">New dispatch</button>
+                </div>
+
+            </section>
+        </div>
     </div>
+
+    <div id="toast" class="toast"></div>
 
     <script src="/static/dispatch.js"></script>
 </body>

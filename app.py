@@ -4,6 +4,7 @@ import mysql.connector
 import datetime
 from datetime import timedelta
 
+
 app = Flask(__name__)
 CORS(app)
 
@@ -209,9 +210,48 @@ def request_dispatch():
 
     total_available = sum(b['quantity'] for b in boxes)
     if total_available < req_qty:
+        # NEW: not enough READY stock. Walk the FIFO queue across ALL
+        # present boxes of this type (ready + still drying) to find how
+        # long until enough of them cross the 24h mark to cover req_qty.
+        cursor.execute("""
+            SELECT box_id, quantity, stored_at
+            FROM inventory_boxes
+            WHERE type_id = %s AND is_present = TRUE
+            ORDER BY stored_at ASC
+        """, (type_id,))
+        all_boxes = cursor.fetchall()
+        total_all = sum(b['quantity'] for b in all_boxes)
+
         cursor.close()
         conn.close()
-        return jsonify({'error': f'Not enough ready stock! Needed: {req_qty}, Ready: {total_available}'}), 400
+
+        if total_all < req_qty:
+            # Not enough stock even after everything currently in the
+            # rack finishes drying — production needs to make more.
+            return jsonify({
+                'status': 'no_stock',
+                'error': f'Not enough total stock. Needed: {req_qty}, In inventory (incl. drying): {total_all}'
+            }), 400
+
+        # Accumulate in FIFO order until quantity covers the request;
+        # the box that tips it over is the one whose 24h mark we wait on.
+        cumulative = 0
+        ready_at = None
+        for b in all_boxes:
+            cumulative += b['quantity']
+            if cumulative >= req_qty:
+                ready_at = b['stored_at'] + timedelta(hours=24)
+                break
+
+        wait_seconds = max(0, int((ready_at - datetime.datetime.now()).total_seconds()))
+
+        return jsonify({
+            'status': 'not_enough_ready',
+            'error': f'Not enough ready cores yet. Ready: {total_available}, Needed: {req_qty}',
+            'ready_quantity': total_available,
+            'wait_seconds': wait_seconds,
+            'ready_at': ready_at.strftime('%Y-%m-%d %H:%M:%S')
+        }), 400
 
     pick_instructions = []
     needed = req_qty
@@ -349,6 +389,10 @@ def register_box():
 def intake_page():
     return render_template('intake.html')
 
+@app.route('/admin')
+def admin_page():
+    return render_template('admin.html')
+
 @app.route('/api/rack_matrix', methods=['GET'])
 def get_rack_matrix():
     conn = get_db_connection()
@@ -365,8 +409,8 @@ def get_rack_matrix():
     cursor.execute(query)
     boxes = cursor.fetchall()
     
-    # Map occupied slots by coordinate string key "row_col"
     occupied_map = {f"{b['row_index']}_{b['col_index']}": b for b in boxes}
+    current_time = datetime.datetime.now()
 
     grid = []
     for r in range(1, 6):
@@ -374,6 +418,23 @@ def get_rack_matrix():
         for c in range(1, 6):
             cell = occupied_map.get(f"{r}_{c}")
             if cell:
+                ready_time = cell['stored_at'] + timedelta(hours=24)
+                
+                remaining_time_str = ""
+                ready_at_str = ""
+
+                if not cell['is_ready']:
+                    # Calculate countdown
+                    diff = ready_time - current_time
+                    hours, remainder = divmod(diff.seconds, 3600)
+                    minutes, _ = divmod(remainder, 60)
+                    if diff.days > 0:
+                        hours += diff.days * 24
+                    remaining_time_str = f"{hours}h {minutes}m"
+                else:
+                    # Format timestamp showing exactly when it became ready (FIFO evidence)
+                    ready_at_str = ready_time.strftime('%H:%M:%S')
+
                 row_cells.append({
                     'row': r,
                     'col': c,
@@ -381,7 +442,9 @@ def get_rack_matrix():
                     'box_id': cell['box_id'],
                     'type_name': cell['type_name'],
                     'quantity': cell['quantity'],
-                    'is_ready': bool(cell['is_ready'])
+                    'is_ready': bool(cell['is_ready']),
+                    'remaining_time': remaining_time_str,
+                    'ready_at_str': ready_at_str
                 })
             else:
                 row_cells.append({
@@ -395,11 +458,6 @@ def get_rack_matrix():
     conn.close()
 
     return jsonify({'grid': grid}), 200
-
-@app.route('/admin')
-def admin_page():
-    return render_template('admin.html')
-
 
 #hi there
 

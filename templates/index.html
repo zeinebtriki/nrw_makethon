@@ -2,102 +2,178 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WMS Operations</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Smart Warehouse Management System</title>
     <link rel="stylesheet" href="/static/style.css">
 </head>
-<body>
+<body class="portal-body">
 
-    <aside id="sidebar">
-        <div class="sidebar-header">
-            <div class="sidebar-brand">WMS · FOCUS</div>
-            <button class="btn-new-task" onclick="window.location.href='/intake'">
-                <span>New Deposit</span>
-                <span>+</span>
-            </button>
-        </div>
-
-        <ul class="sidebar-menu">
-            <li><a href="/" class="active"><span>⊞</span> Overview</a></li>
-            <li><a href="/intake"><span>↓</span> Intake Station</a></li>
-            <li><a href="/dispatch"><span>↑</span> Dispatch Station</a></li>
-            <li><a href="/admin"><span>▥</span> Rack Matrix</a></li>
-        </ul>
-
-        <div class="sidebar-footer">
-            <div class="user-avatar">W</div>
-            <div>
-                <div style="font-weight: 600; font-size: 0.85rem;">Operator</div>
-                <div style="font-size: 0.75rem; color: var(--text-muted);">Station 01</div>
+    <div class="portal-wrapper">
+        <!-- Gateway Header -->
+        <header class="portal-header">
+            <div class="portal-sys-tag">
+                <span class="status-dot"></span> SMART WAREHOUSE MANAGEMENT SYSTEM
             </div>
-        </div>
-    </aside>
-
-    <div id="main-wrapper">
-        <header class="top-bar">
-            <div class="breadcrumbs">
-                <button onclick="toggleSidebar()" style="background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 1rem; margin-right: 8px;">☰</button>
-                <span>System</span> &gt; <span class="active">Overview & Inventory</span>
-            </div>
+            <h1 class="portal-title">Select Station Terminal</h1>
+            <p class="portal-subtitle">Tap a hardware profile below and enter security code to launch interface</p>
         </header>
 
-        <div class="content-container">
-            <h1 style="font-size: 1.4rem; font-weight: 700; margin-bottom: 20px;">System Overview</h1>
-
-            <!-- Station Cards -->
-            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px;">
-                <div class="card" style="margin: 0;">
-                    <span class="section-label">Station 01</span>
-                    <h3 style="margin: 6px 0 4px 0;">Intake Station</h3>
-                    <p style="color: var(--text-secondary); font-size: 0.8rem; margin-bottom: 16px;">Inbound scans & auto-allocation.</p>
-                    <a href="/intake" style="color: var(--accent-orange); text-decoration: none; font-size: 0.85rem; font-weight: 600;">Open Station &rarr;</a>
+        <!-- Terminal Selector Cards -->
+        <div class="portal-grid">
+            
+            <!-- Intake Terminal -->
+            <div class="card station-card" onclick="openPinModal('/intake', 'Intake Terminal')">
+                <div class="card-top">
+                    <span class="terminal-badge">STATION 01</span>
                 </div>
-
-                <div class="card" style="margin: 0;">
-                    <span class="section-label">Station 02</span>
-                    <h3 style="margin: 6px 0 4px 0;">Dispatch Station</h3>
-                    <p style="color: var(--text-secondary); font-size: 0.8rem; margin-bottom: 16px;">FIFO pick engine & status check.</p>
-                    <a href="/dispatch" style="color: var(--accent-orange); text-decoration: none; font-size: 0.85rem; font-weight: 600;">Open Station &rarr;</a>
-                </div>
-
-                <div class="card" style="margin: 0;">
-                    <span class="section-label">Station 03</span>
-                    <h3 style="margin: 6px 0 4px 0;">Admin Matrix</h3>
-                    <p style="color: var(--text-secondary); font-size: 0.8rem; margin-bottom: 16px;">5x5 physical rack matrix.</p>
-                    <a href="/admin" style="color: var(--accent-orange); text-decoration: none; font-size: 0.85rem; font-weight: 600;">Open Station &rarr;</a>
+                
+                <h2 class="card-title">Intake Terminal</h2>
+                <p class="card-desc">
+                    Camera core-type detection, digital scale weight verification, and automated 5x5 slot allocation.
+                </p>
+                
+                <div class="card-footer">
+                    <span class="action-text">Launch Terminal &rarr;</span>
                 </div>
             </div>
 
-            <!-- Table Card -->
-            <div class="card">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                    <div>
-                        <span class="section-label">Active Stock</span>
-                        <h2 style="font-size: 1.1rem; font-weight: 700;">Rack Inventory</h2>
-                    </div>
-                    <div style="width: 260px;">
-                        <input type="text" id="inventory-search" class="input-dark" placeholder="Filter stock..." onkeyup="filterInventoryTable()">
-                    </div>
+            <!-- Dispatch Terminal -->
+            <div class="card station-card" onclick="openPinModal('/dispatch', 'Dispatch Terminal')">
+                <div class="card-top">
+                    <span class="terminal-badge">STATION 02</span>
                 </div>
-
-                <table style="width: 100%; border-collapse: collapse; text-align: left;">
-                    <thead>
-                        <tr style="border-bottom: 1px solid var(--border-color); color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase;">
-                            <th style="padding: 10px 12px;">Box ID</th>
-                            <th style="padding: 10px 12px;">Core Type</th>
-                            <th style="padding: 10px 12px;">Coordinate</th>
-                            <th style="padding: 10px 12px;">Quantity</th>
-                            <th style="padding: 10px 12px;">State</th>
-                        </tr>
-                    </thead>
-                    <tbody id="inventory-table-body">
-                        <tr><td colspan="5" style="padding: 16px; text-align: center; color: var(--text-muted);">Loading active inventory...</td></tr>
-                    </tbody>
-                </table>
+                
+                <h2 class="card-title">Dispatch Terminal</h2>
+                <p class="card-desc">
+                    Visual grid picking sequence, 24-hour cure validation checks, and scale-assisted core retrieval.
+                </p>
+                
+                <div class="card-footer">
+                    <span class="action-text">Launch Terminal &rarr;</span>
+                </div>
             </div>
+
+            <!-- Admin Command -->
+            <div class="card station-card" onclick="openPinModal('/admin', 'Admin Command Center')">
+                <div class="card-top">
+                    <span class="terminal-badge">STATION 03</span>
+                </div>
+                
+                <h2 class="card-title">Admin Command Center</h2>
+                <p class="card-desc">
+                    Master 5x5 physical rack occupancy grid, real-time inventory table, and core specification management.
+                </p>
+                
+                <div class="card-footer">
+                    <span class="action-text">Launch Terminal &rarr;</span>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- System Footer Info -->
+        <footer class="portal-footer">
+            <div>Network Node: <strong>127.0.0.1:5000</strong></div>
+            <div>Security: <strong>PIN Authorization Required</strong></div>
+            <div>Rack Capacity: <strong>25 Slots (5x5 Grid)</strong></div>
+        </footer>
+    </div>
+
+    <!-- Security Passcode Modal -->
+    <div id="pin-modal" class="modal-backdrop">
+        <div class="pin-modal-card">
+            <div class="modal-header">
+                <span class="section-label">Terminal Security Check</span>
+                <button class="close-btn" onclick="closePinModal()">&times;</button>
+            </div>
+            
+            <h3 id="modal-target-title" class="modal-title">Authorize Access</h3>
+            <p class="modal-subtitle">Enter 4-digit security code to initialize terminal</p>
+
+            <div class="pin-display">
+                <span class="pin-dot"></span>
+                <span class="pin-dot"></span>
+                <span class="pin-dot"></span>
+                <span class="pin-dot"></span>
+            </div>
+            
+            <div id="pin-error" class="pin-error-text">Incorrect Security Code</div>
+
+            <div class="pin-pad">
+                <button class="pin-key" onclick="pressPin('1')">1</button>
+                <button class="pin-key" onclick="pressPin('2')">2</button>
+                <button class="pin-key" onclick="pressPin('3')">3</button>
+                <button class="pin-key" onclick="pressPin('4')">4</button>
+                <button class="pin-key" onclick="pressPin('5')">5</button>
+                <button class="pin-key" onclick="pressPin('6')">6</button>
+                <button class="pin-key" onclick="pressPin('7')">7</button>
+                <button class="pin-key" onclick="pressPin('8')">8</button>
+                <button class="pin-key" onclick="pressPin('9')">9</button>
+                <button class="pin-key action" onclick="clearPin()">C</button>
+                <button class="pin-key" onclick="pressPin('0')">0</button>
+                <button class="pin-key action submit" onclick="submitPin()">&check;</button>
+            </div>
+            <div class="demo-hint">Demo Security Code: <strong>1234</strong></div>
         </div>
     </div>
 
-    <script src="/static/index.js"></script>
+    <script>
+        let enteredPin = "";
+        let targetUrl = "";
+        const DEFAULT_PIN = "1234";
+
+        function openPinModal(url, title) {
+            targetUrl = url;
+            document.getElementById('modal-target-title').textContent = title;
+            document.getElementById('pin-modal').classList.add('active');
+            clearPin();
+        }
+
+        function closePinModal() {
+            document.getElementById('pin-modal').classList.remove('active');
+            clearPin();
+        }
+
+        function pressPin(num) {
+            if (enteredPin.length < 4) {
+                enteredPin += num;
+                updatePinDots();
+            }
+            if (enteredPin.length === 4) {
+                setTimeout(submitPin, 150);
+            }
+        }
+
+        function clearPin() {
+            enteredPin = "";
+            document.getElementById('pin-error').style.display = 'none';
+            updatePinDots();
+        }
+
+        function updatePinDots() {
+            const dots = document.querySelectorAll('.pin-dot');
+            dots.forEach((dot, idx) => {
+                if (idx < enteredPin.length) {
+                    dot.classList.add('filled');
+                } else {
+                    dot.classList.remove('filled');
+                }
+            });
+        }
+
+        function submitPin() {
+            if (enteredPin === DEFAULT_PIN) {
+                window.location.href = targetUrl;
+            } else {
+                document.getElementById('pin-error').style.display = 'block';
+                const dots = document.querySelectorAll('.pin-dot');
+                dots.forEach(dot => dot.classList.add('error'));
+                setTimeout(() => {
+                    clearPin();
+                    dots.forEach(dot => dot.classList.remove('error'));
+                }, 600);
+            }
+        }
+    </script>
 </body>
 </html>
