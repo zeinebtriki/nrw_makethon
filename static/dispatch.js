@@ -52,13 +52,10 @@ async function loadTypes() {
 }
 
 function thumbHtml(type) {
-    const initial = type.type_name.trim().charAt(0).toUpperCase();
     if (type.image_path) {
-        return `<img src="${type.image_path}" alt=""
-                     onerror="this.remove()">
-                 <span class="type-thumb-fallback">${initial}</span>`;
+        return `<img src="${type.image_path}" alt="" onerror="this.remove()">`;
     }
-    return `<span class="type-thumb-fallback">${initial}</span>`;
+    return '';
 }
 
 function renderTypeGrid(list) {

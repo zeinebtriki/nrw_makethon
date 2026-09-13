@@ -4,9 +4,17 @@ import mysql.connector
 import datetime
 from datetime import timedelta
 
+import os
+from werkzeug.utils import secure_filename
+
 
 app = Flask(__name__)
 CORS(app)
+
+
+UPLOAD_FOLDER = 'static/uploads/cores'
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 GRID_ROWS = 5 
 GRID_COLS = 5
@@ -19,6 +27,39 @@ def get_db_connection():
         database="smart_core_warehouse"
     )
     return connection
+
+@app.route('/api/add_core_type', methods=['POST'])
+def add_core_type():
+    type_name = request.form.get('type_name')
+    unit_weight = request.form.get('unit_weight')
+    image = request.files.get('image')
+
+    if not type_name or not unit_weight or not image:
+        return jsonify({'error': 'Missing required fields or image.'}), 400
+
+    filename = secure_filename(image.filename)
+    image_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    image.save(image_path)
+    
+    db_image_path = f"/static/uploads/cores/{filename}"
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    insert_query = """
+        INSERT INTO core_types (type_name, unit_weight_g, image_path)
+        VALUES (%s, %s, %s)
+    """
+    try:
+        cursor.execute(insert_query, (type_name, float(unit_weight), db_image_path))
+        conn.commit()
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+    return jsonify({'message': 'Core type added successfully', 'image_path': db_image_path}), 201
 
 @app.route('/api/inventory', methods=['GET'])
 def get_inventory():
@@ -421,10 +462,10 @@ def get_rack_matrix():
                 ready_time = cell['stored_at'] + timedelta(hours=24)
                 
                 remaining_time_str = ""
-                ready_at_str = ""
+                ready_duration_str = ""
 
                 if not cell['is_ready']:
-                    # Calculate countdown
+                    # Countdown until it hits 24h
                     diff = ready_time - current_time
                     hours, remainder = divmod(diff.seconds, 3600)
                     minutes, _ = divmod(remainder, 60)
@@ -432,8 +473,16 @@ def get_rack_matrix():
                         hours += diff.days * 24
                     remaining_time_str = f"{hours}h {minutes}m"
                 else:
-                    # Format timestamp showing exactly when it became ready (FIFO evidence)
-                    ready_at_str = ready_time.strftime('%H:%M:%S')
+                    # Duration since it crossed the 24h ready mark
+                    diff_ready = current_time - ready_time
+                    r_hours, r_rem = divmod(diff_ready.seconds, 3600)
+                    r_mins, _ = divmod(r_rem, 60)
+                    total_r_hours = r_hours + (diff_ready.days * 24)
+                    
+                    if total_r_hours > 0:
+                        ready_duration_str = f"Dried {total_r_hours}h ago"
+                    else:
+                        ready_duration_str = f"Dried {r_mins}m ago"
 
                 row_cells.append({
                     'row': r,
@@ -444,7 +493,7 @@ def get_rack_matrix():
                     'quantity': cell['quantity'],
                     'is_ready': bool(cell['is_ready']),
                     'remaining_time': remaining_time_str,
-                    'ready_at_str': ready_at_str
+                    'ready_duration_str': ready_duration_str
                 })
             else:
                 row_cells.append({
@@ -458,7 +507,6 @@ def get_rack_matrix():
     conn.close()
 
     return jsonify({'grid': grid}), 200
-
 #hi there
 
 if __name__ == '__main__':

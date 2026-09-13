@@ -42,10 +42,12 @@ async function getDetection() {
 
     // Mock camera + scale output — swap for real serial/vision call later
     const mockTypes = [
-        { type_id: 1, type_name: 'Type A - Small Core', weight_g: 2500 },
+        { type_id: 1, type_name: 'Type 1', weight_g: 2500 },
     ];
     return mockTypes[Math.floor(Math.random() * mockTypes.length)];
 }
+
+
 
 async function runDetection() {
     document.getElementById('detect-type').textContent = 'Scanning…';
