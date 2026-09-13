@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intake / Deposit Station</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .intake-wrapper { max-width: 700px; margin: 0 auto; padding: 20px; }
+        .card { background: #1e293b; padding: 24px; border-radius: 12px; border: 1px solid #334155; margin-bottom: 20px; }
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; margin-bottom: 8px; color: #94a3b8; font-weight: 600; }
+        .form-control { width: 100%; padding: 12px; background: #0f172a; border: 1px solid #334155; color: #fff; border-radius: 8px; font-size: 1rem; box-sizing: border-box; }
+        .btn-deposit { width: 100%; padding: 14px; background: #10b981; color: #fff; border: none; border-radius: 8px; font-weight: bold; font-size: 1.1rem; cursor: pointer; transition: background 0.2s; }
+        .btn-deposit:hover { background: #059669; }
+        
+        /* High-visibility target slot card */
+        .slot-display-card { background: #0f172a; border: 2px solid #3b82f6; border-radius: 12px; padding: 24px; text-align: center; margin-top: 20px; display: none; }
+        .slot-number { font-size: 3.5rem; font-weight: bold; color: #38bdf8; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <div class="intake-wrapper">
+        <header>
+            <h1>Deposit Station</h1>
+            <p style="color: #94a3b8;">Inbound Stocking & Automated Slot Allocation</p>
+        </header>
+
+        <div class="card">
+            <div class="form-group">
+                <label for="intake-core-type">Detected / Selected Core Type:</label>
+                <select id="intake-core-type" class="form-control">
+                    <option value="">Loading core types...</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="intake-quantity">Box Quantity (pcs):</label>
+                <input type="number" id="intake-quantity" class="form-control" min="1" placeholder="e.g. 20">
+            </div>
+
+            <button class="btn-deposit" onclick="registerInboundBox()">Confirm Box Deposit</button>
+        </div>
+
+        <!-- Target Slot Visual Feedback -->
+        <div id="slot-result-card" class="slot-display-card">
+            <h2 style="margin: 0; color: #94a3b8;">Target Rack Slot</h2>
+            <div id="target-slot-text" class="slot-number">[R0 : C0]</div>
+            <p style="color: #10b981; margin: 0; font-weight: bold;">✓ Timestamp stamped & database updated</p>
+        </div>
+    </div>
+
+    <script src="/static/intake.js"></script>
+</body>
+</html>

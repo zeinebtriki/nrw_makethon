@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dispatch Station</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .dispatch-wrapper { max-width: 700px; margin: 0 auto; padding: 20px; }
+        .card { background: #1e293b; padding: 20px; border-radius: 8px; border: 1px solid #334155; margin-bottom: 20px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; color: #94a3b8; }
+        .form-control { width: 100%; padding: 10px; background: #0f172a; border: 1px solid #334155; color: #fff; border-radius: 6px; box-sizing: border-box; }
+        .btn { width: 100%; padding: 12px; background: #2563eb; color: #fff; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .instruction-card { background: #1e293b; border-left: 5px solid #3b82f6; padding: 15px; margin-bottom: 15px; border-radius: 6px; }
+        .instruction-card.partial { border-left-color: #f59e0b; }
+        .badge-loc { font-size: 1.2rem; font-weight: bold; color: #38bdf8; }
+    </style>
+</head>
+<body>
+    <div class="dispatch-wrapper">
+        <header>
+            <h1>Dispatch Station</h1>
+            <p style="color: #94a3b8;">FIFO Stock Picking</p>
+        </header>
+
+        <div class="card">
+            <div class="form-group">
+                <label for="core-type-select">Select Core Type:</label>
+                <select id="core-type-select" class="form-control">
+                    <option value="">Loading...</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="quantity-input">Quantity Needed:</label>
+                <input type="number" id="quantity-input" class="form-control" min="1" placeholder="e.g. 5">
+            </div>
+            <button class="btn" onclick="submitDispatchOrder()">Calculate Pick List</button>
+        </div>
+
+        <div id="pick-instructions-list"></div>
+    </div>
+
+    <script src="/static/dispatch.js"></script>
+</body>
+</html>

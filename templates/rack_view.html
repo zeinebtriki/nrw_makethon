@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Warehouse Dashboard</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="/static/app.js"></script>
+</head>
+<body>
+
+    <header>
+        <h1>Warehouse Live Matrix (5x5)</h1>
+        <div class="legend">
+            <div class="legend-item"><span class="dot empty"></span> Empty</div>
+            <div class="legend-item"><span class="dot drying"></span> Drying (< 24h)</div>
+            <div class="legend-item"><span class="dot ready"></span> Ready (>= 24h)</div>
+        </div>
+    </header>
+
+    <div id="grid" class="grid-container"></div>
+
+</body>
+</html>

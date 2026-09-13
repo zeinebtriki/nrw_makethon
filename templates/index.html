@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WMS Operations</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+    <aside id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-brand">WMS · FOCUS</div>
+            <button class="btn-new-task" onclick="window.location.href='/intake'">
+                <span>New Deposit</span>
+                <span>+</span>
+            </button>
+        </div>
+
+        <ul class="sidebar-menu">
+            <li><a href="/" class="active"><span>⊞</span> Overview</a></li>
+            <li><a href="/intake"><span>↓</span> Intake Station</a></li>
+            <li><a href="/dispatch"><span>↑</span> Dispatch Station</a></li>
+            <li><a href="/admin"><span>▥</span> Rack Matrix</a></li>
+        </ul>
+
+        <div class="sidebar-footer">
+            <div class="user-avatar">W</div>
+            <div>
+                <div style="font-weight: 600; font-size: 0.85rem;">Operator</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">Station 01</div>
+            </div>
+        </div>
+    </aside>
+
+    <div id="main-wrapper">
+        <header class="top-bar">
+            <div class="breadcrumbs">
+                <button onclick="toggleSidebar()" style="background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 1rem; margin-right: 8px;">☰</button>
+                <span>System</span> &gt; <span class="active">Overview & Inventory</span>
+            </div>
+        </header>
+
+        <div class="content-container">
+            <h1 style="font-size: 1.4rem; font-weight: 700; margin-bottom: 20px;">System Overview</h1>
+
+            <!-- Station Cards -->
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px;">
+                <div class="card" style="margin: 0;">
+                    <span class="section-label">Station 01</span>
+                    <h3 style="margin: 6px 0 4px 0;">Intake Station</h3>
+                    <p style="color: var(--text-secondary); font-size: 0.8rem; margin-bottom: 16px;">Inbound scans & auto-allocation.</p>
+                    <a href="/intake" style="color: var(--accent-orange); text-decoration: none; font-size: 0.85rem; font-weight: 600;">Open Station &rarr;</a>
+                </div>
+
+                <div class="card" style="margin: 0;">
+                    <span class="section-label">Station 02</span>
+                    <h3 style="margin: 6px 0 4px 0;">Dispatch Station</h3>
+                    <p style="color: var(--text-secondary); font-size: 0.8rem; margin-bottom: 16px;">FIFO pick engine & status check.</p>
+                    <a href="/dispatch" style="color: var(--accent-orange); text-decoration: none; font-size: 0.85rem; font-weight: 600;">Open Station &rarr;</a>
+                </div>
+
+                <div class="card" style="margin: 0;">
+                    <span class="section-label">Station 03</span>
+                    <h3 style="margin: 6px 0 4px 0;">Admin Matrix</h3>
+                    <p style="color: var(--text-secondary); font-size: 0.8rem; margin-bottom: 16px;">5x5 physical rack matrix.</p>
+                    <a href="/admin" style="color: var(--accent-orange); text-decoration: none; font-size: 0.85rem; font-weight: 600;">Open Station &rarr;</a>
+                </div>
+            </div>
+
+            <!-- Table Card -->
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <div>
+                        <span class="section-label">Active Stock</span>
+                        <h2 style="font-size: 1.1rem; font-weight: 700;">Rack Inventory</h2>
+                    </div>
+                    <div style="width: 260px;">
+                        <input type="text" id="inventory-search" class="input-dark" placeholder="Filter stock..." onkeyup="filterInventoryTable()">
+                    </div>
+                </div>
+
+                <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                    <thead>
+                        <tr style="border-bottom: 1px solid var(--border-color); color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase;">
+                            <th style="padding: 10px 12px;">Box ID</th>
+                            <th style="padding: 10px 12px;">Core Type</th>
+                            <th style="padding: 10px 12px;">Coordinate</th>
+                            <th style="padding: 10px 12px;">Quantity</th>
+                            <th style="padding: 10px 12px;">State</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inventory-table-body">
+                        <tr><td colspan="5" style="padding: 16px; text-align: center; color: var(--text-muted);">Loading active inventory...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/index.js"></script>
+</body>
+</html>
