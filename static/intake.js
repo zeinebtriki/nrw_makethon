@@ -35,17 +35,26 @@ function showToast(msg, isError = false) {
     setTimeout(() => toast.classList.remove('is-visible'), 3200);
 }
 
-// ── Mocked vision + scale read ──────────────────────────────────────
 async function getDetection() {
-    // Simulated latency for the "scan"
-    await new Promise(r => setTimeout(r, 700));
-
-    // Mock camera + scale output — swap for real serial/vision call later
-    const mockTypes = [
-        { type_id: 1, type_name: 'Type 1', weight_g: 2500 },
-    ];
-    return mockTypes[Math.floor(Math.random() * mockTypes.length)];
+    try {
+        // Pings your Flask backend to trigger the OpenCV camera
+        const res = await fetch('/api/scan_vision');
+        const data = await res.json();
+        
+        if (!res.ok) {
+            showToast(data.error || 'Vision detection failed', true);
+            return null;
+        }
+        
+        return data; // Returns the live type_name and your hardcoded weight
+    } catch (err) {
+        console.error('Vision trigger failed:', err);
+        showToast('Cannot connect to vision service', true);
+        return null;
+    }
 }
+
+
 
 
 

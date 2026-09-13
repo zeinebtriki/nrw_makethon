@@ -7,6 +7,8 @@ from datetime import timedelta
 import os
 from werkzeug.utils import secure_filename
 
+from vision_service import IntakeVisionScanner
+vision_scanner = IntakeVisionScanner()
 
 app = Flask(__name__)
 CORS(app)
@@ -170,6 +172,38 @@ def request_production():
         'message': 'Pick sequence calculated successfully',
         'requested_qty': requested_qty,
         'instructions': instructions
+    }), 200
+
+
+
+
+@app.route('/api/scan_vision', methods=['GET'])
+def scan_vision():
+    # 1. Real-time vision detection
+    try:
+        type_name = vision_scanner.capture_part_type()
+    except Exception as e:
+        return jsonify({'error': f'Camera error: {str(e)}'}), 500
+    
+    # 2. Look up the ID in the database
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT type_id, type_name FROM core_types WHERE type_name = %s", (type_name,))
+    core_type = cursor.fetchone()
+    cursor.close()
+    conn.close()
+    
+    if not core_type:
+        return jsonify({'error': f'Type {type_name} not found in DB'}), 404
+        
+    # 3. HARDCODE THE WEIGHT HERE
+    # Change 2500.00 to whatever fixed weight you want to send to the database
+    mock_total_weight_g = 2500.00
+    
+    return jsonify({
+        'type_id': core_type['type_id'],
+        'type_name': core_type['type_name'],
+        'weight_g': mock_total_weight_g
     }), 200
 
 
